@@ -1,0 +1,10 @@
+After installing new packages, run in the Console:
+  renv::snapshot()
+  
+When adding a new feature (in a new branch), run in the Terminal:
+  git switch -c feat/...
+  
+When making a commit, run in the Terminal:
+  git add .
+  git commit -m "<commit description here>"
+  git push -u origin HEAD
