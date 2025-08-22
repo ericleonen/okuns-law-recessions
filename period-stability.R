@@ -45,6 +45,8 @@ abline(mod.us.overall,
        lwd = 2,
        lty = 2)
 
+coefs.us.overall <- mod.us.overall$coefficients
+
 # Test if Okun's Law is stable over periods
 mod.us.recessions <- lm(gdp_growth$United.States ~ 
                           unrate_diff$United.States*after_2008 + 
@@ -89,6 +91,20 @@ legend("topright",
        col = c(col.overall, col.before_2008, col.between_2008_2020, col.after_2020),
        lwd = 2,
        lty= c(2, 1, 1, 1))
+
+okun_results.periods <- 
+  data.frame(
+    "Period" = c("2006-2020", "2006-2008", "2008-2020", "2020-2025"),
+    "intercept" = c(coefs.us.overall[1], 
+                     coefs.us.recessions[1], 
+                     coefs.us.recessions[1] + coefs.us.recessions[3], 
+                     coefs.us.recessions[1] + coefs.us.recessions[3] + coefs.us.recessions[5]),
+    "coef" = c(coefs.us.overall[2],
+                coefs.us.recessions[2],
+                coefs.us.recessions[2] + coefs.us.recessions[4],
+                coefs.us.recessions[2] + coefs.us.recessions[4] + coefs.us.recessions[6]))
+
+write.csv(okun_results.periods, "results/okun_results.periods.csv", row.names = F)
 
 # clear all variables
 rm(list = ls())

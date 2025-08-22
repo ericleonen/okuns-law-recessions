@@ -2,6 +2,7 @@ library(dplyr)
 library(car)
 library(broom)
 library(stringr)
+library(sandwich)
 
 data <- read.csv("data/processed/panel_data.csv") %>%
   filter(Area != "United States")
@@ -31,66 +32,30 @@ okun_coefficients.base <- tidy(mod.states) %>%
 okun_coefficients <- tidy(mod.states) %>%
   filter(str_detect(term, "unrate_diff")) %>%
   mutate(
-    Area = str_remove(term, "unrate_diff:Area"),
-    coef = ifelse(Area == "", okun_coefficients.base, okun_coefficients.base + estimate)
+    Area = ifelse(term == "unrate_diff", "Alabama", str_remove(term, "unrate_diff:Area")),
+    coef = ifelse(Area == "Alabama", okun_coefficients.base, okun_coefficients.base + estimate)
   ) %>%
   select(Area, coef)
 
+okun_intercepts.base <- tidy(mod.states) %>%
+  filter(term == "(Intercept)") %>%
+  pull(estimate)
+
+okun_intercepts <- tidy(mod.states) %>%
+  filter(!str_detect(term, "unrate_diff")) %>%
+  mutate(
+    Area = ifelse(term == "(Intercept)", "Alabama", str_remove(term, "Area")),
+    intercept = ifelse(Area == "Alabama", okun_intercepts.base, okun_intercepts.base + estimate)
+  ) %>%
+  select(Area, intercept)
+  
+okun_results <- full_join(okun_intercepts, okun_coefficients, by = "Area")
+  
 print(
-  okun_coefficients,
+  okun_results,
   n = 51)
 
-# --- COEFFICIENTS ---
-# Area                     coef
-# <chr>                   <dbl>
-# 1 Alabama               -0.0236 
-# 2 Alaska                -0.0114 
-# 3 Arizona               -0.0121 
-# 4 Arkansas              -0.0126 
-# 5 California            -0.00909
-# 6 Colorado              -0.0107 
-# 7 Connecticut           -0.0119 
-# 8 Delaware              -0.00713
-# 9 District of Columbia  -0.0104 
-# 10 Florida              -0.0102 
-# 11 Georgia              -0.0140 
-# 12 Hawaii               -0.00766
-# 13 Idaho                -0.0128 
-# 14 Illinois             -0.00855
-# 15 Indiana              -0.0123 
-# 16 Iowa                 -0.0111 
-# 17 Kansas               -0.0139 
-# 18 Kentucky             -0.0139 
-# 19 Louisiana            -0.00819
-# 20 Maine                -0.0138 
-# 21 Maryland             -0.0126 
-# 22 Massachusetts        -0.00783
-# 23 Michigan             -0.00968
-# 24 Minnesota            -0.0146 
-# 25 Mississippi          -0.0131 
-# 26 Missouri             -0.0137 
-# 27 Montana              -0.0131 
-# 28 Nebraska             -0.0217 
-# 29 Nevada               -0.00868
-# 30 New Hampshire        -0.0113 
-# 31 New Jersey           -0.00983
-# 32 New Mexico           -0.0161 
-# 33 New York             -0.00854
-# 34 North Carolina       -0.0116 
-# 35 North Dakota         -0.0161 
-# 36 Ohio                 -0.0115 
-# 37 Oklahoma             -0.0120 
-# 38 Oregon               -0.0108 
-# 39 Pennsylvania         -0.0129 
-# 40 Rhode Island         -0.00865
-# 41 South Carolina       -0.0125 
-# 42 South Dakota         -0.0171 
-# 43 Tennessee            -0.0138 
-# 44 Texas                -0.0113 
-# 45 Utah                 -0.00961
-# 46 Vermont              -0.0145 
-# 47 Virginia             -0.00992
-# 48 Washington           -0.00795
-# 49 West Virginia        -0.0113 
-# 50 Wisconsin            -0.0104 
-# 51 Wyoming              -0.0280 
+write.csv(okun_results, "results/okun_results.states.csv", row.names = F)
+
+# clear variables
+rm(list = ls())
