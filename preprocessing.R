@@ -24,7 +24,7 @@ gdp_growth <- read.csv("data/raw/SQGDP9__ALL_AREAS_2005_2025.csv") %>%
   mutate(across(where(is.numeric), ~ (.x / lag(.x) - 1))) %>%
   drop_na()
 
-write.csv(gdp_growth, "data/processed/gdp_growth.csv")
+write.csv(gdp_growth, "data/processed/gdp_growth.csv", row.names = F)
 
 # Preprocess BLS Unemployment Data
 
@@ -75,7 +75,30 @@ unrate_diff.us <- read.csv("data/raw/ln.data.14.USS.csv") %>%
 
 unrate_diff <- inner_join(unrate_diff.us, unrate_diff.states, by = "Quarter")
 
-write.csv(unrate_diff, "data/processed/unrate_diff.csv")
+write.csv(unrate_diff, "data/processed/unrate_diff.csv", row.names = F)
+
+# clear unnecessary variables
+rm(unrate_diff.states, unrate_diff.us, unrate.states, us_states)
+
+# create one large long panel data
+gdp_long <- gdp_growth %>%
+  pivot_longer(
+    -Quarter,
+    names_to = "Area",
+    values_to = "gdp_growth"
+  )
+
+unrate_long <- unrate_diff %>%
+  pivot_longer(
+    -Quarter,
+    names_to = "Area",
+    values_to = "unrate_diff"
+  )
+
+panel_data <- gdp_long %>%
+  inner_join(unrate_long, by = c("Quarter", "Area"))
+
+write.csv(panel_data, "data/processed/panel_data.csv", row.names = F)
 
 # clear all variables
 rm(list = ls())
