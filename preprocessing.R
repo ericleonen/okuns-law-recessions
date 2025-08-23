@@ -21,10 +21,8 @@ gdp_growth <- read.csv("data/raw/SQGDP9__ALL_AREAS_2005_2025.csv") %>%
     values_from = RealGDP
   ) %>%
   mutate(Quarter = as.yearqtr(Quarter, format = "X%Y.Q%q")) %>%
-  mutate(across(where(is.numeric), ~ (.x / lag(.x) - 1))) %>%
+  mutate(across(where(is.numeric), ~ (.x / lag(.x) * 100 - 100))) %>%
   drop_na()
-
-write.csv(gdp_growth, "data/processed/gdp_growth.csv", row.names = F)
 
 # Preprocess BLS Unemployment Data
 
@@ -75,7 +73,12 @@ unrate_diff.us <- read.csv("data/raw/ln.data.14.USS.csv") %>%
 
 unrate_diff <- inner_join(unrate_diff.us, unrate_diff.states, by = "Quarter")
 
-write.csv(unrate_diff, "data/processed/unrate_diff.csv", row.names = F)
+# only keep quarters where all data is available
+min_quarter <- max(gdp_growth$Quarter[1], unrate_diff$Quarter[1])
+max_quarter <- min(last(gdp_growth$Quarter), last(unrate_diff$Quarter))
+
+gdp_growth <- gdp_growth[between(gdp_growth$Quarter, min_quarter, max_quarter), ]
+unrate_diff <- unrate_diff[between(unrate_diff$Quarter, min_quarter, max_quarter), ]
 
 # clear unnecessary variables
 rm(unrate_diff.states, unrate_diff.us, unrate.states, us_states)
@@ -98,7 +101,7 @@ unrate_long <- unrate_diff %>%
 panel_data <- gdp_long %>%
   inner_join(unrate_long, by = c("Quarter", "Area"))
 
-write.csv(panel_data, "data/processed/panel_data.csv", row.names = F)
+write.csv(panel_data, "data/processed.csv", row.names = F)
 
 # clear all variables
 rm(list = ls())

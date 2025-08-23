@@ -5,10 +5,10 @@ library(stringr)
 library(sandwich)
 library(ggplot2)
 
-data <- read.csv("data/processed/panel_data.csv") %>%
+data.states <- read.csv("data/processed.csv") %>%
   filter(Area != "United States")
 
-mod.states <- lm(gdp_growth ~ unrate_diff*Area, data = data)
+mod.states <- lm(gdp_growth ~ unrate_diff*Area, data = data.states)
 
 linearHypothesis(mod.states,
                  matchCoefs(mod.states, "unrate_diff:Area"),
