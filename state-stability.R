@@ -3,6 +3,7 @@ library(car)
 library(broom)
 library(stringr)
 library(sandwich)
+library(ggplot2)
 
 data <- read.csv("data/processed/panel_data.csv") %>%
   filter(Area != "United States")
@@ -49,7 +50,8 @@ okun_intercepts <- tidy(mod.states) %>%
   ) %>%
   select(Area, intercept)
   
-okun_results <- full_join(okun_intercepts, okun_coefficients, by = "Area")
+okun_results <- full_join(okun_intercepts, okun_coefficients, by = "Area") %>%
+  arrange(coef)
   
 print(
   okun_results,
