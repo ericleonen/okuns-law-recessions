@@ -20,11 +20,11 @@ linearHypothesis(mod.states,
 # 
 # Note: Coefficient covariance matrix supplied.
 # 
-# Res.Df Df      F    Pr(>F)    
+#   Res.Df Df      F    Pr(>F)    
 # 1   4028                        
-# 2   3978 50 4.3041 < 2.2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 2   3978 50 3.9325 < 2.2e-16 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 okun_coefficients.base <- tidy(mod.states) %>%
   filter(term == "unrate_diff") %>%

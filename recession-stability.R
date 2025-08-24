@@ -33,6 +33,15 @@ points(gdp_growth ~ unrate_diff,
        col = col.after_2020,
        pch = 19)
 
+# Label outliers
+outliers <- data.us[data.us$Quarter %in% c("2020 Q2", "2020 Q3"), ]
+
+with(outliers[outliers$Quarter == "2020 Q2", ],
+     text(unrate_diff, gdp_growth + 1, labels = Quarter, pos = 3, cex = 0.8, col = col.after_2020))
+
+with(outliers[outliers$Quarter == "2020 Q3", ],
+     text(unrate_diff, gdp_growth - 2, labels = Quarter, pos = 4, cex = 0.8, col = col.after_2020))
+
 # Test if Okun's Law holds overall
 mod.us.overall <- lm(gdp_growth ~ unrate_diff, data = data.us)
 coeftest(mod.us.overall, vcov. = vcovHC(mod.us.overall, type = "HC1"))
