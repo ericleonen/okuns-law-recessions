@@ -18,7 +18,7 @@ plot(gdp_growth ~ unrate_diff,
      data = data.us,
      col = "white",
      xlab = "QoQ Unemployment Rate Change (%)",
-     ylab = "QoQ Real GDP Growth (%)",
+     ylab = "QoQ Real GDP Annualized Growth (%)",
      main = sub("\\.", " ", "Okun's Law for United.States, 2006-2025"))
 points(gdp_growth ~ unrate_diff,
        data = data.us[!after_2008, ],
@@ -36,6 +36,15 @@ points(gdp_growth ~ unrate_diff,
 # Test if Okun's Law holds overall
 mod.us.overall <- lm(gdp_growth ~ unrate_diff, data = data.us)
 coeftest(mod.us.overall, vcov. = vcovHC(mod.us.overall, type = "HC1"))
+# --- RESULTS ---
+# t test of coefficients:
+#   
+#   Estimate Std. Error t value  Pr(>|t|)    
+# (Intercept)  2.08815    0.32046  6.5162 6.460e-09 ***
+#   unrate_diff -3.98717    0.80701 -4.9407 4.348e-06 ***
+#   ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
 abline(mod.us.overall,
        col = col.overall,
        lwd = 2,
@@ -55,18 +64,17 @@ linearHypothesis(mod.us.recessions,
 
 # --- RESULTS ---
 # Linear hypothesis test:
-#   unrate_diff$United.States:after_2008TRUE = 0
-# unrate_diff$United.States:after_2020TRUE = 0
+#   unrate_diff:after_2008TRUE = 0
+# unrate_diff:after_2020TRUE = 0
 # 
 # Model 1: restricted model
-# Model 2: gdp_growth$United.States ~ unrate_diff$United.States * after_2008 + 
-#   unrate_diff$United.States * after_2020
+# Model 2: gdp_growth ~ unrate_diff * after_2008 + unrate_diff * after_2020
 # 
 # Note: Coefficient covariance matrix supplied.
 # 
 # Res.Df Df      F Pr(>F)
 # 1     76                 
-# 2     74  2 0.0264  0.974
+# 2     74  2 0.0508 0.9505
 
 abline(a = coefs.us.recessions[1],
        b = coefs.us.recessions[2],

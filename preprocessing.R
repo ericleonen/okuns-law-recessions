@@ -21,7 +21,7 @@ gdp_growth <- read.csv("data/raw/SQGDP9__ALL_AREAS_2005_2025.csv") %>%
     values_from = RealGDP
   ) %>%
   mutate(Quarter = as.yearqtr(Quarter, format = "X%Y.Q%q")) %>%
-  mutate(across(where(is.numeric), ~ (.x / lag(.x) * 100 - 100))) %>%
+  mutate(across(where(is.numeric), ~ ((.x / lag(.x))^4 * 100 - 100))) %>%
   drop_na()
 
 # Preprocess BLS Unemployment Data
