@@ -5,8 +5,7 @@ library(stringr)
 library(sandwich)
 library(ggplot2)
 
-data.states <- read.csv("data/processed.csv") %>%
-  filter(Area != "United States")
+data.states <- read.csv("data/processed.csv")
 
 mod.states <- lm(gdp_growth ~ unrate_diff*Area, data = data.states)
 
@@ -53,9 +52,8 @@ okun_intercepts <- tidy(mod.states) %>%
 okun_results <- full_join(okun_intercepts, okun_coefficients, by = "Area") %>%
   arrange(coef)
   
-print(
-  okun_results,
-  n = 51)
+print(okun_results,
+      n = 51)
 
 write.csv(okun_results, "results/okun_results.states.csv", row.names = F)
 
