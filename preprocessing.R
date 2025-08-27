@@ -103,5 +103,5 @@ panel_data <- gdp_long %>%
 # --- Save processed panel data ---
 write.csv(panel_data, "data/processed.csv", row.names = F)
 
-# clear all variables
+# --- Clear all variables ---
 rm(list = ls())
