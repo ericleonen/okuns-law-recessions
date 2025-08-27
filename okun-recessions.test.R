@@ -1,123 +1,75 @@
+# Testing script to see if Okun slopes change significantly due to major
+# recessions. Estimated models for each period are saved.
+
 library(dplyr)
 library(lmtest)
 library(sandwich)
 library(car)
 
-col.overall = "black"
-col.before_2008 = "steelblue"
-col.between_2008_2020 = "orange"
-col.after_2020 = "red"
-
+# --- Load US data and create period flags ---
 data.us <- read.csv("data/processed.csv") %>%
   filter(Area == "United States")
 
 after_2008 <- data.us$Quarter >= 2008
 after_2020 <- data.us$Quarter >= 2020
 
-plot(gdp_growth ~ unrate_diff,
-     data = data.us,
-     col = "white",
-     xlab = "QoQ Unemployment Rate Change (%)",
-     ylab = "QoQ Real GDP Annualized Growth (%)",
-     main = sub("\\.", " ", "Okun's Law for United.States, 2006-2025"))
-points(gdp_growth ~ unrate_diff,
-       data = data.us[!after_2008, ],
-       col = col.before_2008,
-       pch = 19)
-points(gdp_growth ~ unrate_diff,
-       data = data.us[after_2008 & !after_2020, ],
-       col = col.between_2008_2020,
-       pch = 19)
-points(gdp_growth ~ unrate_diff,
-       data = data.us[after_2020, ],
-       col = col.after_2020,
-       pch = 19)
-
-# Label outliers
-outliers <- data.us[data.us$Quarter %in% c("2020 Q2", "2020 Q3"), ]
-
-with(outliers[outliers$Quarter == "2020 Q2", ],
-     text(unrate_diff, gdp_growth + 1, labels = Quarter, pos = 3, cex = 0.8, col = col.after_2020))
-
-with(outliers[outliers$Quarter == "2020 Q3", ],
-     text(unrate_diff, gdp_growth - 2, labels = Quarter, pos = 4, cex = 0.8, col = col.after_2020))
-
-# Test if Okun's Law holds overall
-mod.us.overall <- lm(gdp_growth ~ unrate_diff, data = data.us)
-coeftest(mod.us.overall, vcov. = vcovHC(mod.us.overall, type = "HC1"))
-# --- RESULTS ---
-# t test of coefficients:
-#   
-#   Estimate Std. Error t value  Pr(>|t|)    
-# (Intercept)  2.08815    0.32046  6.5162 6.460e-09 ***
-#   unrate_diff -3.98717    0.80701 -4.9407 4.348e-06 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-abline(mod.us.overall,
-       col = col.overall,
-       lwd = 2,
-       lty = 2)
-
-coefs.us.overall <- mod.us.overall$coefficients
-
-# Test if Okun's Law is stable over periods
+# --- Estimate model ---
 mod.us.recessions <- lm(gdp_growth ~ unrate_diff*after_2008 + unrate_diff*after_2020,
                         data = data.us)
-coefs.us.recessions <- mod.us.recessions$coefficients
 
+# --- Results ---
 linearHypothesis(mod.us.recessions,
                  c("unrate_diff:after_2008TRUE = 0",
                    "unrate_diff:after_2020TRUE = 0"),
-                 vcov. = vcovHC(mod.us.recessions, type = "HC1"))
+                 vcov. = vcovHC, type = "HC1")
+  #   Res.Df Df      F Pr(>F)
+  # 1     76                 
+  # 2     74  2 0.0123 0.9878
 
-# --- RESULTS ---
-# Linear hypothesis test:
-#   unrate_diff:after_2008TRUE = 0
-# unrate_diff:after_2020TRUE = 0
-# 
-# Model 1: restricted model
-# Model 2: gdp_growth ~ unrate_diff * after_2008 + unrate_diff * after_2020
-# 
-# Note: Coefficient covariance matrix supplied.
-# 
-# Res.Df Df      F Pr(>F)
-# 1     76                 
-# 2     74  2 0.0508 0.9505
+coeftest(mod.us.recessions, vcov. = vcovHC, type = "HC1")
+  #                            Estimate Std. Error t value  Pr(>|t|)    
+  # (Intercept)                 2.20057    0.32503  6.7703 2.627e-09 ***
+  # unrate_diff                -4.68935    2.96170 -1.5833    0.1176    
+  # after_2008TRUE             -0.46456    0.44128 -1.0528    0.2959    
+  # after_2020TRUE              1.06176    1.09901  0.9661    0.3371    
+  # unrate_diff:after_2008TRUE  0.36401    3.17615  0.1146    0.9091    
+  # unrate_diff:after_2020TRUE  0.35265    1.40722  0.2506    0.8028    
+  # ---
+  # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-abline(a = coefs.us.recessions[1],
-       b = coefs.us.recessions[2],
-       col = col.before_2008,
-       lwd = 2)
-abline(a = coefs.us.recessions[1] + coefs.us.recessions[3],
-       b = coefs.us.recessions[2] + coefs.us.recessions[4],
-       col = col.between_2008_2020,
-       lwd = 2)
-abline(a = coefs.us.recessions[1] + coefs.us.recessions[3] + coefs.us.recessions[5],
-       b = coefs.us.recessions[2] + coefs.us.recessions[4] + coefs.us.recessions[6],
-       col = col.after_2020,
-       lwd = 2)
+summary(mod.us.recessions)
+  # Residuals:
+  #     Min      1Q  Median      3Q     Max 
+  # -7.3253 -1.0655  0.1719  1.0441 15.7124 
+  # 
+  # Coefficients:
+  #                            Estimate Std. Error t value Pr(>|t|)  
+  # (Intercept)                  2.2006     0.9377   2.347   0.0216 *
+  # unrate_diff                 -4.6894     6.7510  -0.695   0.4895  
+  # after_2008TRUE              -0.4646     1.0296  -0.451   0.6532  
+  # after_2020TRUE               1.0618     0.7695   1.380   0.1718  
+  # unrate_diff:after_2008TRUE   0.3640     6.8521   0.053   0.9578  
+  # unrate_diff:after_2020TRUE   0.3526     1.2058   0.292   0.7708  
+  # ---
+  # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+  # 
+  # Residual standard error: 2.939 on 74 degrees of freedom
+  # Multiple R-squared:  0.742,	Adjusted R-squared:  0.7246 
+  # F-statistic: 42.56 on 5 and 74 DF,  p-value: < 2.2e-16
 
-legend("topright",
-       legend = c("overall", "before 2008", "between 2008 and 2020", "after 2020"),
-       col = c(col.overall, col.before_2008, col.between_2008_2020, col.after_2020),
-       lwd = 2,
-       lty= c(2, 1, 1, 1),
-       cex = 0.9)
+# --- Save model's coefficients ---
+intercept.pre <- mod.us.recessions$coefficients[1]
+intercept.GR <- intercept.pre + mod.us.recessions$coefficients[3]
+intercept.COVID <- intercept.GR + mod.us.recessions$coefficients[5]
+slope.pre <- mod.us.recessions$coefficients[2]
+slope.GR <- slope.pre + mod.us.recessions$coefficients[4]
+slope.COVID <- slope.GR + mod.us.recessions$coefficients[6]
 
-okun_results.periods <- 
-  data.frame(
-    "Period" = c("2006-2020", "2006-2008", "2008-2020", "2020-2025"),
-    "intercept" = c(coefs.us.overall[1], 
-                     coefs.us.recessions[1], 
-                     coefs.us.recessions[1] + coefs.us.recessions[3], 
-                     coefs.us.recessions[1] + coefs.us.recessions[3] + coefs.us.recessions[5]),
-    "coef" = c(coefs.us.overall[2],
-                coefs.us.recessions[2],
-                coefs.us.recessions[2] + coefs.us.recessions[4],
-                coefs.us.recessions[2] + coefs.us.recessions[4] + coefs.us.recessions[6]))
+coefs.us.recessions <- cbind("Period" = c("pre", "GR", "COVID"),
+                             "intercept"= c(intercept.pre, intercept.GR, intercept.COVID),
+                             "slope" = c(slope.pre, slope.GR, slope.COVID))
 
-write.csv(okun_results.periods, "results/okun_results.periods.csv", row.names = F)
+write.csv(coefs.us.recessions, "results/coefs.us.recessions.csv", row.names = F)
 
 # clear all variables
 rm(list = ls())

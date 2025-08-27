@@ -39,6 +39,7 @@ summary(mod.us.ref)
 # --- Save model's coefficients ---
 coefs.us.ref <- cbind("intercept" = mod.us.ref$coefficients[1],
                       "slope" = mod.us.ref$coefficients[2])
+
 write.csv(coefs.us.ref, "results/coefs.us.ref.csv", row.names = F)
 
 # --- Clear all variables ---
