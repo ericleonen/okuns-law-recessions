@@ -1,45 +1,79 @@
+# Plotting script to visually compare states with steepest and flattest Okun
+# slopes to each other and national reference.
+
 library(dplyr)
 library(stringr)
 
-okun_results.states <- read.csv("results/okun_results.states.csv")
-data.states <- read.csv("data/processed.csv") %>%
-  filter(Area != "United States")
+# --- Define plotting styles ---
+col.points <- "steelblue"
+col.line.ref <- "black"
+col.line <- "red"
 
-hist(okun_results.states$intercept,
-     xlab = "Okun Intercept",
-     main = "Distribution of U.S. Okun Intercepts Across States",
-     breaks = 10)
+pch <- 19
 
-hist(okun_results.states$coef,
-     xlab = "Okun Slope",
-     main = "Distribution of U.S. Okun Slopes Across States",
-     breaks = 10)
+lwd <- 2
 
-par(mfrow = c(1, 3))
+lty.ref <- 2
 
+# --- Outlier labeling function ---
 add_outlier_label <- function(data.state, q, pos) {
-  with(data.state[data.state$Quarter == q, ],
+  with(subset(data.state, Quarter == q),
        text(unrate_diff, gdp_growth, labels = Quarter, pos = pos, col = "black"))
 }
 
-# Top 3 States with Steepest Okun Coefficients
+# --- Load state data ---
+data.states <- read.csv("data/processed.csv") %>%
+  filter(Area != "United States")
+
+# --- Load saved reference and state model coefficients ---
+coefs.us.ref <- read.csv("results/coefs.us.ref.csv")
+results.states <- read.csv("results/coefs.states.csv")
+
+# --- Plot histogram comparing reference slope to distribution of state slopes ---
+png("plots/hist.state-slopes-distribution.png", width = 800, height = 600)
+hist(results.states$slope,
+     xlab = "Okun Slope",
+     main = "Distribution of Okun Slopes Across States",
+     breaks = 10,
+     col = col.points)
+abline(v = coefs.us.ref[1, "slope"],
+       col = col.line.ref,
+       lwd = lwd,
+       lty = lty.ref)
+legend("topright",
+       legend = "national",
+       lwd = lwd,
+       lty = lty.ref,
+       col = col.line.ref)
+
+dev.off()
+
+# --- Plot points and regressions of states with steepest Okun slopes with reference
+png("plots/scatter.state-steepest-slopes.png", width = 1200, height = 400)
+par(mfrow = c(1, 3))
+
 for (i in 1:3) {
-  state_results <- okun_results.states[i, ]
-  state <- str_replace(state_results$Area, " ", ".")
-  data.state <- data.states[data.states$Area == state_results$Area, ]
+  state <- results.states[i, "Area"]
+  coefs.state <- results.states[i, c("intercept", "slope")]
+  data.state <- data.states[data.states$Area == state, ]
   
   plot(gdp_growth ~ unrate_diff,
        data = data.state,
-       pch = 19,
-       col = "steelblue",
+       pch = pch,
+       col = col.points,
        xlab = "QoQ Unemployment Rate Change (%)",
        ylab = ifelse(i == 1, "QoQ Real GDP Annualized Growth (%)", ""),
-       main = paste(state_results$Area, " (", round(state_results$coef, 2), ")"))
+       main = paste(str_replace(state, "\\.", " "), " (", round(coefs.state$slope, 2), ")"))
   
-  abline(a = state_results$intercept,
-         b = state_results$coef,
-         col = "red",
-         lwd = 2)
+  abline(a = coefs.us.ref[1, "intercept"],
+         b = coefs.us.ref[1, "slope"],
+         lty = lty.ref,
+         col = col.line.ref)
+  
+  abline(a = coefs.state$intercept,
+         b = coefs.state$slope,
+         col = col.line,
+         lwd = lwd)
   
   add_outlier_label(data.state, "2020 Q2", 2)
   
@@ -50,35 +84,48 @@ for (i in 1:3) {
     add_outlier_label(data.state, "2020 Q3", 4)
   }
   
-  if (state == "South.Dakota") {
+  if (state == "South Dakota") {
     add_outlier_label(data.state, "2008 Q1", 4)
     add_outlier_label(data.state, "2012 Q3", 2)
   }
+  
+  if (i == 3) {
+    legend("topright",
+           legend = c("national", "state"),
+           lty = c(lty.ref, 1),
+           col = c(col.line.ref, col.line))
+  }
 }
 
-# Top 3 States with Flattest Okun Coefficients
+dev.off()
+
+# --- Plot points and regressions of states with flattest Okun slopes with reference
+png("plots/scatter.state-flattest-slopes.png", width = 1200, height = 400)
+par(mfrow = c(1, 3))
+
 for (i in 1:3) {
-  state_results <- okun_results.states[nrow(okun_results.states) + 1 - i, ]
-  state <- str_replace(state_results$Area, " ", ".")
-  data.state <- data.states[data.states$Area == state_results$Area, ]
+  j <- nrow(results.states) + 1 - i
+  state <- results.states[j, "Area"]
+  coefs.state <- results.states[j, c("intercept", "slope")]
+  data.state <- data.states[data.states$Area == state, ]
   
   plot(gdp_growth ~ unrate_diff,
        data = data.state,
-       pch = 19,
-       col = "steelblue",
+       pch = pch,
+       col = col.points,
        xlab = "QoQ Unemployment Rate Change (%)",
        ylab = ifelse(i == 1, "QoQ Real GDP Annualized Growth (%)", ""),
-       main = paste(state_results$Area, " (", round(state_results$coef, 2), ")"))
+       main = paste(str_replace(state, "\\.", " "), " (", round(coefs.state$slope, 2), ")"))
   
-  abline(a = state_results$intercept,
-         b = state_results$coef,
-         col = "red",
-         lwd = 2)
+  abline(a = coefs.us.ref[1, "intercept"],
+         b = coefs.us.ref[1, "slope"],
+         lty = lty.ref,
+         col = col.line.ref)
   
-  abline(a = state_results$intercept,
-         b = state_results$coef,
-         col = "red",
-         lwd = 2)
+  abline(a = coefs.state$intercept,
+         b = coefs.state$slope,
+         col = col.line,
+         lwd = lwd)
   
   add_outlier_label(data.state, "2020 Q2", 2)
   
@@ -90,4 +137,17 @@ for (i in 1:3) {
     add_outlier_label(data.state, "2005 Q4", 4)
     add_outlier_label(data.state, "2009 Q1", 4)
   }
+  
+  if (i == 3) {
+    legend("topright",
+           legend = c("national", "state"),
+           lty = c(lty.ref, 1),
+           col = c(col.line.ref, col.line))
+  }
 }
+
+dev.off()
+
+# --- Clear all variables and turn of device ---
+rm(list = ls())
+dev.off()

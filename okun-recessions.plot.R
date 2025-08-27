@@ -33,7 +33,7 @@ coefs.us.ref <- read.csv("results/coefs.us.ref.csv")
 coefs.us.recessions <- read.csv("results/coefs.us.recessions.csv", row.names = "Period")
 
 # --- Plot data points colored by period
-png("plots/plot.recessions.png", width = 800, height = 600)
+png("plots/scatter.recessions.png", width = 800, height = 600)
 plot(gdp_growth ~ unrate_diff,
      data = data.us,
      col = "white",
