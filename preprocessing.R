@@ -1,8 +1,11 @@
+# Pipeline script for cleaning and merging raw output and unemployment data into
+# a single, easy-to-use table.
+
 library(dplyr)
 library(tidyr)
 library(zoo)
 
-# Preprocess BEA Real GDP Data
+# --- Raw BEA real GDP data => real GDP growth data series per area ---
 gdp_growth <- read.csv("data/raw/SQGDP9__ALL_AREAS_2005_2025.csv") %>%
   filter(
     GeoFIPS <= 56000,
@@ -24,8 +27,7 @@ gdp_growth <- read.csv("data/raw/SQGDP9__ALL_AREAS_2005_2025.csv") %>%
   mutate(across(where(is.numeric), ~ ((.x / lag(.x))^4 * 100 - 100))) %>%
   drop_na()
 
-# Preprocess BLS Unemployment Data
-
+# --- Raw BLS unemployment rate data => unemployment rate change series per area ---
 us_states <- read.csv("data/raw/la.area.csv", sep = "\t") %>%
   mutate(area_code = as.numeric(substr(area_code, 3, 4))) %>%
   filter(
@@ -73,17 +75,14 @@ unrate_diff.us <- read.csv("data/raw/ln.data.14.USS.csv") %>%
 
 unrate_diff <- inner_join(unrate_diff.us, unrate_diff.states, by = "Quarter")
 
-# only keep quarters where all data is available
+# --- Remove quarters where any area is missing any data ---
 min_quarter <- max(gdp_growth$Quarter[1], unrate_diff$Quarter[1])
 max_quarter <- min(last(gdp_growth$Quarter), last(unrate_diff$Quarter))
 
 gdp_growth <- gdp_growth[between(gdp_growth$Quarter, min_quarter, max_quarter), ]
 unrate_diff <- unrate_diff[between(unrate_diff$Quarter, min_quarter, max_quarter), ]
 
-# clear unnecessary variables
-rm(unrate_diff.states, unrate_diff.us, unrate.states, us_states)
-
-# create one large long panel data
+# --- Turn series into panel data: [Quarter, Area, gdp_growth, unrate_diff] ---
 gdp_long <- gdp_growth %>%
   pivot_longer(
     -Quarter,
@@ -101,6 +100,7 @@ unrate_long <- unrate_diff %>%
 panel_data <- gdp_long %>%
   inner_join(unrate_long, by = c("Quarter", "Area"))
 
+# --- Save processed panel data ---
 write.csv(panel_data, "data/processed.csv", row.names = F)
 
 # clear all variables
