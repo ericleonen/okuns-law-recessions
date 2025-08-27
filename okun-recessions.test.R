@@ -4,7 +4,6 @@
 library(dplyr)
 library(lmtest)
 library(sandwich)
-library(car)
 
 # --- Load US data and create period flags ---
 data.us <- read.csv("data/processed.csv") %>%
@@ -71,5 +70,5 @@ coefs.us.recessions <- cbind("Period" = c("pre", "GR", "COVID"),
 
 write.csv(coefs.us.recessions, "results/coefs.us.recessions.csv", row.names = F)
 
-# clear all variables
+# --- Clear all variables ---
 rm(list = ls())
