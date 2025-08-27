@@ -40,18 +40,7 @@ summary(mod.us.recessions)
   # Residuals:
   #     Min      1Q  Median      3Q     Max 
   # -7.3253 -1.0655  0.1719  1.0441 15.7124 
-  # 
-  # Coefficients:
-  #                            Estimate Std. Error t value Pr(>|t|)  
-  # (Intercept)                  2.2006     0.9377   2.347   0.0216 *
-  # unrate_diff                 -4.6894     6.7510  -0.695   0.4895  
-  # after_2008TRUE              -0.4646     1.0296  -0.451   0.6532  
-  # after_2020TRUE               1.0618     0.7695   1.380   0.1718  
-  # unrate_diff:after_2008TRUE   0.3640     6.8521   0.053   0.9578  
-  # unrate_diff:after_2020TRUE   0.3526     1.2058   0.292   0.7708  
-  # ---
-  # Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-  # 
+  #
   # Residual standard error: 2.939 on 74 degrees of freedom
   # Multiple R-squared:  0.742,	Adjusted R-squared:  0.7246 
   # F-statistic: 42.56 on 5 and 74 DF,  p-value: < 2.2e-16
