@@ -4,6 +4,7 @@
 library(dplyr)
 library(lmtest)
 library(sandwich)
+library(car)
 
 # --- Load US data and create period flags ---
 data.us <- read.csv("data/processed.csv") %>%
@@ -46,11 +47,12 @@ summary(mod.us.recessions)
   # F-statistic: 42.56 on 5 and 74 DF,  p-value: < 2.2e-16
 
 # --- Save model's coefficients ---
+mod.us.recessions$coefficients
 intercept.pre <- mod.us.recessions$coefficients[1]
 intercept.GR <- intercept.pre + mod.us.recessions$coefficients[3]
-intercept.COVID <- intercept.GR + mod.us.recessions$coefficients[5]
+intercept.COVID <- intercept.GR + mod.us.recessions$coefficients[4]
 slope.pre <- mod.us.recessions$coefficients[2]
-slope.GR <- slope.pre + mod.us.recessions$coefficients[4]
+slope.GR <- slope.pre + mod.us.recessions$coefficients[5]
 slope.COVID <- slope.GR + mod.us.recessions$coefficients[6]
 
 coefs.us.recessions <- cbind("Period" = c("pre", "GR", "COVID"),
