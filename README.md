@@ -13,6 +13,11 @@ Play with it [here](https://public.tableau.com/app/profile/eric.leonen1602/viz/O
 ## Paper
 Read it [here](https://drive.google.com/file/d/1X0vYUTDUBq5AYZpU16YYuxfxwuCONm03/view?usp=sharing).
 
+![Visualization of the stability of the national Okun slope over periods marked by major recessions](plots/scatter.recessions.png)
+
+**Abstract:**
+This paper empirically examines how Okun's Law, the negative, linear relationship between output growth and unemployment rate changes, changes in the United States between periods marked by major recessions or across the states. Using historical output and unemployment data from 2005-2025, we fit linear models with interaction terms (for different periods or different states), to test for significant evidence for heterogeneity of slope term in a regression model of Okun's Law. Our results show no evidence of heterogeneity of Okun's Law across periods, and weak evidence across states. Our findings support the validity of Okun's Law notably using simple econometric models.
+
 ---
 ## Project Review (for me)
 **Tech & Skills Practiced:** R-Studio, Linear Regression w/ Interactions, Econometrics, Hypothesis Testing, Tableau
