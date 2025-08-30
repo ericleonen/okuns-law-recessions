@@ -11,4 +11,17 @@ Play with it [here](https://public.tableau.com/app/profile/eric.leonen1602/viz/O
 ![Okun's Law Across the United States: A Interactive Tableau Visualization](tableau/tableau-preview.png)
 
 ## Paper
-*Coming soon!*
+Read it [here](https://drive.google.com/file/d/1X0vYUTDUBq5AYZpU16YYuxfxwuCONm03/view?usp=sharing).
+
+---
+## Project Review (for me)
+**Tech & Skills Practiced:** R-Studio, Linear Regression w/ Interactions, Econometrics, Hypothesis Testing, Tableau
+
+**Accomplishments:**
+  - Completed my first data analysis project 100% in R
+  - Learned how to make maps, use a "dual axis", and set up filters/actions in Tableau
+  - Learned how to use GitHub with R-Studio
+
+**Possible Improvements:**
+  - Could create dedicated folders for each section of code
+  - Could have employed more functions for less repetitive code
